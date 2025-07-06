@@ -2,8 +2,8 @@ from PIL import Image
 import numpy as np
 
 # converting the two images to arrays
-img_a = Image.open("imageA.jpg").convert("RGB")
-img_b = Image.open("imageB.jpg").convert("RGB")
+img_a = Image.open("../media/imageA.jpg").convert("RGB")
+img_b = Image.open("../media/imageB.jpg").convert("RGB")
 
 arr_a = np.array(img_a)
 arr_b = np.array(img_b)
