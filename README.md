@@ -2,6 +2,10 @@
 
 ---
 
+This media art project visualizes how a website changes over time using snapshots from the Wayback Machine. 
+By taking automated screenshots of archived pages and comparing them pixel-by-pixel, the project highlights visual 
+differences through glitch-inspired effects.
+
 ## Installation
 
 - Waybackpack — Get URLs from Wayback Machine
