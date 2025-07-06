@@ -1,0 +1,1 @@
+# take screenshots with the help of Playwright

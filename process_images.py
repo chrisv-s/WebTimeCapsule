@@ -1,0 +1,1 @@
+# find differences, masks, (glitch) effects
