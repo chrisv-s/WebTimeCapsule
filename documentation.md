@@ -108,3 +108,47 @@ When I run:
 
 Source:
 https://github.com/internetarchive/wayback/blob/master/wayback-cdx-server/README.md 
+
+# Documentation - 12.08.2025
+
+## Step 2 – Taking Screenshots with Playwright
+
+Now that I have my list of URLs, the next step is to visit each one and save an image of the homepage.  
+This step turned out to be more tricky than I thought.
+
+---
+
+### Research & Approach
+
+I decided to use **Playwright**, a browser automation library, because:
+
+- It can run **headless** (no visible browser window), which makes it run faster.
+- I can set the **viewport size** so all screenshots are consistent.
+- I can run **JavaScript inside the page** to clean up elements I don’t want in the image (like the Wayback Machine toolbar).
+
+I prompted ChatGPT to write me a small JavaScript snippet in `_remove_wayback_banner()` to delete any elements with IDs starting with `wm-` (plus a few known extras).  
+This made my screenshots cleaner and easier to compare later.
+
+---
+
+### Difficulties
+
+- **Slow-loading snapshots**:  
+  Some snapshots load very slowly or never finish loading, which froze my code.  
+  → I solved this by setting timeouts (60 seconds max per page).
+
+- **Images not fully loaded**:  
+  Sometimes a screenshot would capture half-rendered content.  
+  → I added a `wait_for_function` check that waits until all images report as “loaded” before saving the screenshot.
+
+- **Occasional blank or broken pages**:  
+  → I added retries so if the first attempt fails, it tries again before skipping.
+
+---
+
+### Reflection
+
+At first, I thought this step would be *“the easy part”*, but it actually required more problem-solving than expected.  
+Working with archived pages is unpredictable: some load perfectly, others hang forever, and a few crash the browser.  
+By adding **timeouts, retries, and cleanup code snippets**, I made the process much more reliable. I will probably have 
+to come back later to this part and tweak a few things.
