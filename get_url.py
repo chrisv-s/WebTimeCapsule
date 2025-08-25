@@ -8,7 +8,7 @@ from pathlib import Path
 # source: https://aws.amazon.com/compare/the-difference-between-https-and-http/
 
 def fetch_snapshots_for_protocol(proto_url, start_date, end_date):
-    cdx_url = "http://web.archive.org/cdx/search/cdx"
+    cdx_url = "https://web.archive.org/cdx/search/cdx"
     params = {
         "url": proto_url,
         "from": start_date.replace("-", ""),
@@ -62,10 +62,3 @@ def get_snapshots(domain, start_date, end_date, frequency_days=90, save_to=None)
 
     return archive_urls
 
-if __name__ == "__main__":
-    domain = input("Enter website domain (without http/https): ")
-    start_date = input("Enter start date (YYYY-MM-DD): ")
-    end_date = input("Enter end date (YYYY-MM-DD): ")
-    freq_days = int(input("Frequency in days: "))
-
-    get_snapshots(domain, start_date, end_date, freq_days, save_to="data/snapshot_urls.txt")

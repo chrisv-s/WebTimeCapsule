@@ -1,80 +1,90 @@
+# main.py
+from pathlib import Path
+import numpy as np
+from datetime import datetime, date
+from dateutil import parser
 from get_url import get_snapshots
-from screenshots import take_screenshots
+from screenshot import take_screenshots
+from process_images import analyse_all
+from viewer import run_viewer
 
-# clean user input
-def clean_domain(domain):
-    return domain.replace("http://", "").replace("https://", "").strip("/")
+SNAPSHOT_FILE = Path("data/snapshot_urls.txt")
+SCREENSHOT_DIR = Path("media/screenshots")
+SNAPSHOT_FILE.parent.mkdir(parents=True, exist_ok=True)
+MAX_SNAPS = 5
+
+def clean_domain(domain: str) -> str:
+    return domain.removeprefix("http://").removeprefix("https://").strip("/")
+
+def parse_timestamp(url: str) -> datetime:
+    ts = url.split("/web/")[1].split("/")[0]
+    return datetime.strptime(ts, "%Y%m%d%H%M%S")
+
+def filter_by_frequency(urls, freq_days: int):
+    """Stub for now – not used, just here for compatibility."""
+    pass
+
+def pick_evenly(urls, max_snaps=5):
+    if len(urls) <= max_snaps:
+        return urls
+    idxs = np.linspace(0, len(urls)-1, max_snaps, dtype=int)
+    return [urls[i] for i in idxs]
+
+def step(n, msg):
+    print(f"\n[STEP {n}] {msg}...")
 
 def main():
-    print("=== Website Time Capsule ===\n")
+    print(f"\n === Website Time Capsule ===\n")
 
-    raw_domain = input("Enter website domain (e.g., www.example.com): ").strip()
-    domain = clean_domain(raw_domain)
+    # --- Step 0: Ask for basic info ---
+    domain = clean_domain(input("Enter website domain (e.g. www.example.com): ").strip())
 
-    # Maybe use a calendar interface here?
-    start_date = input("Enter start date (YYYY-MM-DD): ").strip()
-    end_date = input("Enter end date (YYYY-MM-DD): ").strip()
+    raw_start = input("Start date (press Enter for earliest): ").strip()
+    raw_end   = input("End date   (press Enter for today): ").strip()
 
-    snapshot_file = "data/snapshot_urls.txt"
-    screenshot_dir = "media/screenshots"
+    if raw_start:
+        start_date = parser.parse(raw_start).strftime("%Y%m%d")
+    else:
+        start_date = "19960101"   # Wayback earliest
 
-    print("\nChecking available snapshots...")
+    if raw_end:
+        end_date = parser.parse(raw_end).strftime("%Y%m%d")
+    else:
+        end_date = date.today().strftime("%Y%m%d")
 
-    # Is this a little inefficient?
-    all_urls = get_snapshots(
-        domain=domain,
-        start_date=start_date,
-        end_date=end_date,
-        frequency_days=1
-    )
+    # --- Step 1: Get snapshots ---
+    step(1, "Checking available snapshots")
+    all_urls = get_snapshots(domain=domain, start_date=start_date, end_date=end_date, frequency_days=1)
     print(f"Total snapshots found: {len(all_urls)}")
-
     if not all_urls:
-        print("ERROR: No snapshots found for given range.")
+        print("ERROR: No snapshots found.")
         return
 
-    while True:
-        try:
-            freq_days = int(input(
-                "Enter frequency in days to filter snapshots (e.g., 90): ").strip()
-            )
-        except ValueError:
-            print("[WARN] Please enter a valid number.")
-            continue
+    # Limit snapshots to maximum of 5
+    filtered = pick_evenly(all_urls, MAX_SNAPS)
+    print(f"Using {len(filtered)} snapshot(s).")
 
-        filtered_urls = get_snapshots(
-            domain=domain,
-            start_date=start_date,
-            end_date=end_date,
-            frequency_days=freq_days
-        )
+    SNAPSHOT_FILE.write_text("\n".join(filtered), encoding="utf-8")
 
-        print(f"Snapshots after filtering: {len(filtered_urls)}")
-
-        # maybe a little unnecessary...
-        confirm = input("Use this filtered set? (y/n): ").strip().lower()
-        if confirm == "y":
-            get_snapshots(
-                domain=domain,
-                start_date=start_date,
-                end_date=end_date,
-                frequency_days=freq_days,
-                save_to=snapshot_file
-            )
-            break
-
-    print("\nTaking screenshots of filtered snapshots...")
+    # --- Step 2: Take screenshots ---
+    step(2, "Taking screenshots")
     saved, skipped = take_screenshots(
-        input_file=snapshot_file,
-        out_dir=screenshot_dir,
+        input_file=str(SNAPSHOT_FILE),
+        out_dir=str(SCREENSHOT_DIR),
         viewport=(1280, 800),
         retries=2,
         wait_seconds_after_load=2
     )
+    print(f"Screenshots saved: {len(saved)}, skipped: {len(skipped)}")
 
-    print(f"Total snapshots processed: {len(filtered_urls)}")
-    print(f"Screenshots saved: {len(saved)}")
-    print(f"Screenshots skipped: {len(skipped)}")
+    # --- Step 3: Analyse & create glitches ---
+    step(3, "Analysing screenshots & generating glitches")
+    analyse_all()
+
+    # --- Step 4: Launch viewer ---
+    step(4, "Launching viewer")
+    run_viewer()
 
 if __name__ == "__main__":
     main()
+
