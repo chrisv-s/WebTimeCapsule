@@ -182,7 +182,7 @@ Working with archived pages is unpredictable: some load perfectly, others hang f
 By adding **timeouts, retries, and cleanup code snippets**, I made the process much more reliable. I will probably have 
 to come back later to this part and tweak a few things.
 
-## Documentation – 24.08.2025  
+## Documentation – 23.08.2025  
 
 ### Step 3 – Viewing & Playing with the Results  
 
@@ -204,7 +204,7 @@ This smooth fading isn’t just for looks — it’s tied to my **glitch effect*
 
 Instead of calculating differences on the fly (which would lag), I pre-generate and save all glitch images with `process_images.py`. Then the Pygame viewer just loads and shows them.
 
-## Documentation – 25.08.2025  
+## Documentation – 24.08.2025  
 
 Originally the viewer always showed the glitch overlay, even when the slider was snapped to a single screenshot.  
 That made the interface confusing.  
@@ -244,3 +244,6 @@ I simplified it to:
 
 These changes keep the tool fast (no more waiting for 20+ screenshots) and much more user-friendly in my opinion. Of course 
 it is dissapointing that the total number of screenshots analysed is so small... maybe I will find another solution for that.
+
+### Final Documentation (25.08.25)
+

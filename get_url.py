@@ -7,7 +7,8 @@ from pathlib import Path
 # archived versions, and keeping my code modular
 # source: https://aws.amazon.com/compare/the-difference-between-https-and-http/
 
-def fetch_snapshots_for_protocol(proto_url, start_date, end_date):
+# for more infos on this function look up my documentation
+def get_snapshots_url(proto_url, start_date, end_date):
     cdx_url = "https://web.archive.org/cdx/search/cdx"
     params = {
         "url": proto_url,
@@ -25,7 +26,7 @@ def fetch_snapshots_for_protocol(proto_url, start_date, end_date):
         data = resp.json()
 
     # ChatGPT prompt: "Give me Python code that calls an API with requests, prints an error if it fails or if the JSON is invalid,
-    # "and returns an empty list in both cases."
+    # and returns an empty list in both cases."
 
     except requests.RequestException as e:
         print(f"ERROR: Failed to get snapshots for {proto_url}: {e}")
@@ -39,11 +40,11 @@ def fetch_snapshots_for_protocol(proto_url, start_date, end_date):
 def get_snapshots(domain, start_date, end_date, frequency_days=90, save_to=None):
     protocol_map = {}
     for proto in ["http://", "https://"]:
-        ts_list = fetch_snapshots_for_protocol(proto + domain, start_date, end_date)
+        ts_list = get_snapshots_url(proto + domain, start_date, end_date)
         for ts in ts_list:
-            protocol_map[ts] = proto  # remember which protocol this timestamp came from
+            protocol_map[ts] = proto  # remembers which protocol this timestamp came from
 
-    # Sort timestamps and filter by frequency
+    # I sort by timestamps and filter by frequency
     archive_urls = []
     last_date = None
     for ts in sorted(protocol_map.keys()):
@@ -55,7 +56,7 @@ def get_snapshots(domain, start_date, end_date, frequency_days=90, save_to=None)
 
     if save_to:
         Path(save_to).parent.mkdir(parents=True, exist_ok=True)
-        with open(save_to, "w", encoding="utf-8") as f:
+        with open(save_to, "w") as f:
             for url in archive_urls:
                 f.write(url + "\n")
         print(f"INFO: Saved {len(archive_urls)} snapshot URLs to {save_to}")
